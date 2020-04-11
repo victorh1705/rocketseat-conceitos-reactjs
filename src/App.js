@@ -1,31 +1,48 @@
-import React from "react";
-
-import "./styles.css";
+import React, { useEffect, useState } from 'react'
+import api from './services/api'
+import './styles.css'
 
 function App() {
-  async function handleAddRepository() {
-    // TODO
-  }
+    const [repositories, setRepositories] = useState([])
 
-  async function handleRemoveRepository(id) {
-    // TODO
-  }
+    useEffect(() => {
+        api.get('/repositories').then((resp) => {
+            setRepositories(resp.data)
+        })
+    }, [])
 
-  return (
-    <div>
-      <ul data-testid="repository-list">
-        <li>
-          Repositório 1
+    async function handleAddRepository() {
+        api.post('/repositories', {
+            url: 'https://github.com/Rocketseat/umbriel',
+            title: 'Umbriel',
+            techs: ['Node', 'Express', 'TypeScript'],
+        }).then((resp) => {
+            setRepositories([...repositories, resp.data])
+        })
+    }
 
-          <button onClick={() => handleRemoveRepository(1)}>
-            Remover
-          </button>
-        </li>
-      </ul>
+    async function handleRemoveRepository(id) {
+        api.delete(`/repositories/${id}`).then((resp) => {
+            setRepositories(repositories.filter((i) => i.id !== id))
+        })
+    }
 
-      <button onClick={handleAddRepository}>Adicionar</button>
-    </div>
-  );
+    return (
+        <div>
+            <ul data-testid='repository-list'>
+                {repositories.map((repository) => (
+                    <li key={repositories.id}>
+                        {repository.title}
+                        <button onClick={() => handleRemoveRepository(repository.id)}>
+                            Remover
+                        </button>
+                    </li>
+                ))}
+            </ul>
+
+            <button onClick={handleAddRepository}>Adicionar</button>
+        </div>
+    )
 }
 
-export default App;
+export default App
